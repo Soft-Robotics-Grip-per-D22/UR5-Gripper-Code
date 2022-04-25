@@ -6,6 +6,8 @@ enum state
   DROP,
   HOLD
 };
+
+// initialize vartiables
 bool vibrate = false;
 int vibrationPin = 4;
 bool suck = false;
@@ -30,6 +32,8 @@ void loop()
     //iterator++;
     //Serial.println(iterator);
     Serial.println("Set State Parameters");
+    
+    // set vibrate blow and suck states based off of currentState
     switch (currentState)
     {
     case OFF:
@@ -51,6 +55,7 @@ void loop()
       Serial.println("NO STATE");
     }
 
+    // set pin based off of vibrate blow and suck states
     // vibration
     if (vibrate)
     {
@@ -110,6 +115,8 @@ void loop()
     Serial.print("read is ");
     Serial.println(read);
     Serial.println("");
+
+    //change state depending on what was typed
     switch (read)
     {
     case 1:
