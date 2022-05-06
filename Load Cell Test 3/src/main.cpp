@@ -1,4 +1,4 @@
-  /*
+ /*
  Example using the SparkFun HX711 breakout board with a scale
  By: Nathan Seidle
  SparkFun Electronics
@@ -41,7 +41,7 @@ SimpleKalmanFilter pressureKalmanFilter(1, 1, 1.5);
 
 HX711 scale;
 
-float calibration_factor = 183000; //-7050 worked for my 440lb max scale setup
+float calibration_factor = 694000; //-7050 worked for my 440lb max scale setup
 
 void setup() {
   Serial.begin(9600);
@@ -62,18 +62,18 @@ void setup() {
 
 void loop() {  
   scale.set_scale(calibration_factor); //Adjust to this calibration factor
-  //Serial.print("Reading: ");
+  Serial.print("Reading: ");
  // Serial.print(scale.get_units(), 1);
   float lbs = scale.get_units();
   float estimated_lbs = pressureKalmanFilter.updateEstimate(lbs);
   float grams = lbs*453.592;
   float estimated_grams = estimated_lbs*453.592;
-  Serial.print(grams*(-1));
-  //print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
-  //Serial.print(estimated_grams);
-  //Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
-  //Serial.print(" calibration_factor: ");
-  //Serial.print(calibration_factor);
+  Serial.print(grams);
+  Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
+  Serial.print(estimated_grams);
+  Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
+  Serial.print(" calibration_factor: ");
+  Serial.print(calibration_factor);
   Serial.println();
 
   if(Serial.available())
@@ -85,4 +85,3 @@ void loop() {
       calibration_factor -= 100;
   }
 }
-
