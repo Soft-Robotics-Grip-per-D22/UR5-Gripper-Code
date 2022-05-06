@@ -34,14 +34,19 @@
 #include "HX711.h"
 #include <SimpleKalmanFilter.h>
 
-SimpleKalmanFilter pressureKalmanFilter(1, 1, 1.5);
+SimpleKalmanFilter pressureKalmanFilter1(1, 1, 1.5);
+SimpleKalmanFilter pressureKalmanFilter2(1, 1, 1.5);
 
-#define LOADCELL_DOUT_PIN  4
-#define LOADCELL_SCK_PIN  5
+#define LOADCELL_DOUT_PIN_1  4
+#define LOADCELL_SCK_PIN_1   5
+#define LOADCELL_DOUT_PIN_2  2
+#define LOADCELL_SCK_PIN_2   3
 
-HX711 scale;
+HX711 scale1;
+HX711 scale2;
 
-float calibration_factor = 694000; //-7050 worked for my 440lb max scale setup
+float calibration_factor1 = 694000; //-7050 worked for my 440lb max scale setup
+float calibration_factor2 = 694000; //-7050 worked for my 440lb max scale setup
 
 void setup() {
   Serial.begin(9600);
@@ -51,37 +56,68 @@ void setup() {
   Serial.println("Press + or a to increase calibration factor");
   Serial.println("Press - or z to decrease calibration factor");
   
-  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-  scale.set_scale();
-  scale.tare(); //Reset the scale to 0
+  scale1.begin(LOADCELL_DOUT_PIN_1, LOADCELL_SCK_PIN_1);
+  scale1.set_scale();
+  scale1.tare(); //Reset the scale to 0
+
+  scale2.begin(LOADCELL_DOUT_PIN_2, LOADCELL_SCK_PIN_2);
+  scale2.set_scale();
+  scale2.tare(); //Reset the scale to 0
   
-  long zero_factor = scale.read_average(); //Get a baseline reading
+  long zero_factor_1 = scale1.read_average(); //Get a baseline reading
   Serial.print("Zero factor: "); //This can be used to remove the need to tare the scale. Useful in permanent scale projects.
-  Serial.println(zero_factor);
+  Serial.println(zero_factor_1);
+
+  long zero_factor_2 = scale2.read_average(); //Get a baseline reading
+  Serial.print("Zero factor: "); //This can be used to remove the need to tare the scale. Useful in permanent scale projects.
+  Serial.println(zero_factor_2);
 }
 
 void loop() {  
-  scale.set_scale(calibration_factor); //Adjust to this calibration factor
-  Serial.print("Reading: ");
- // Serial.print(scale.get_units(), 1);
-  float lbs = scale.get_units();
-  float estimated_lbs = pressureKalmanFilter.updateEstimate(lbs);
-  float grams = lbs*453.592;
-  float estimated_grams = estimated_lbs*453.592;
-  Serial.print(grams);
-  Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
-  Serial.print(estimated_grams);
-  Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
-  Serial.print(" calibration_factor: ");
-  Serial.print(calibration_factor);
+  scale1.set_scale(calibration_factor1); //Adjust to this calibration factor
+  // Serial.print("1 Reading: ");
+  // Serial.print(scale.get_units(), 1);
+  float lbs1 = scale1.get_units();
+  float estimated_lbs1 = pressureKalmanFilter1.updateEstimate(lbs1);
+  float grams1 = lbs1*453.592;
+  float estimated_grams1 = estimated_lbs1*453.592;
+  // Serial.print(grams1);
+  // Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
+  // Serial.print(estimated_grams1);
+  // Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
+  // Serial.print(" calibration_factor: ");
+  // Serial.print(calibration_factor1);
+  // Serial.println();
+
+  scale2.set_scale(calibration_factor2); //Adjust to this calibration factor
+  // Serial.print("2 Reading: ");
+  // Serial.print(scale.get_units(), 1);
+  float lbs2 = scale2.get_units();
+  float estimated_lbs2 = pressureKalmanFilter2.updateEstimate(lbs2);
+  float grams2 = lbs2*453.592;
+  float estimated_grams2 = estimated_lbs2*453.592;
+  // Serial.print(grams2);
+  // Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
+  // Serial.print(estimated_grams2);
+  // Serial.print(" g"); //Change this to kg and re-adjust the calibration factor if you follow SI units like a sane person
+  // Serial.print(" calibration_factor: ");
+  // Serial.print(calibration_factor2);
+
+  Serial.print("g: ");
+  float total_estimated_grams = estimated_grams1 + estimated_grams2;
+  Serial.print(total_estimated_grams);
   Serial.println();
 
   if(Serial.available())
   {
     char temp = Serial.read();
-    if(temp == '+' || temp == 'a')
-      calibration_factor += 100;
-    else if(temp == '-' || temp == 'z')
-      calibration_factor -= 100;
+    if(temp == 't' || temp == 'a'){
+      scale1.set_scale();
+      scale1.tare();
+      scale2.set_scale();
+      scale2.tare();
+    }
+
   }
+
 }
